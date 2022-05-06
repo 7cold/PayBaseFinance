@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "55171012138",
+    "project_id": "paybasefinance",
+    "storage_bucket": "paybasefinance.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:55171012138:android:435f64536b17c2e78d5553",
+        "android_client_info": {
+          "package_name": "com.example.layouts"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "55171012138-eda0ppqs92c40asofpbq33dpsnlubkme.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsBUm43JExzip88ws6agAR-K2szd8MBAA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "55171012138-eda0ppqs92c40asofpbq33dpsnlubkme.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "55171012138-ep2nn1h6fbppskd76tcvlm10v59qe260.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.layouts"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
