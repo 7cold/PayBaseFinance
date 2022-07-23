@@ -19,6 +19,7 @@ dependencies:
   syncfusion_flutter_datepicker: 
   syncfusion_flutter_charts: 
   flutter_masked_text:
+  expandable: ^5.0.1
   flutter_localizations:
     sdk: flutter
 

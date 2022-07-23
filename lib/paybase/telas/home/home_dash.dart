@@ -8,6 +8,8 @@ import 'package:layouts/paybase/const/text.dart';
 import 'package:layouts/paybase/const/widgets.dart';
 import 'package:layouts/paybase/controller/controller.dart';
 import 'package:layouts/paybase/telas/all_trasactions.dart';
+import 'package:layouts/paybase/telas/createPurchase.dart';
+import 'package:layouts/paybase/telas/historic_receive.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 final Controller c = Get.put(Controller());
@@ -41,7 +43,7 @@ class HomeDash extends StatelessWidget {
                               ButtonsPB().textButton(
                                 "Histórico",
                                 () {
-                                  c.update();
+                                  Get.to(() => HistoricReceivePB());
                                 },
                               ),
                             ],
@@ -55,7 +57,9 @@ class HomeDash extends StatelessWidget {
                             Flexible(
                               flex: 1,
                               child: ButtonsPB().iconButton1(() {
-                                WidgetsPB().createTransference();
+                                Get.to(() => CreatePurchasePB(
+                                      category: "Recebimento",
+                                    ));
                               }, "Transferir", Icons.attach_money_outlined),
                             ),
                             Flexible(
@@ -71,7 +75,7 @@ class HomeDash extends StatelessWidget {
                             alignment: WrapAlignment.spaceBetween,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Text("Estatística", style: TextPB.h4),
+                              Text("Estatísticas", style: TextPB.h4),
                               ButtonsPB().textButton(
                                 "Ver mais",
                                 () {},
@@ -139,7 +143,6 @@ class _Chart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SfCartesianChart(
-        title: ChartTitle(text: 'Saldo entre entradas e saídas', textStyle: TextPB.h6),
         primaryYAxis: NumericAxis(
           labelStyle: TextPB.display6,
           maximum: 1000,

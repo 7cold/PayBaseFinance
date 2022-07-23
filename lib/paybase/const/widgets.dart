@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:layouts/paybase/const/buttons.dart';
@@ -43,11 +44,8 @@ class WidgetsPB {
   Future createTransference() {
     final TextEditingController name = TextEditingController();
     final TextEditingController obs = TextEditingController();
-    final _formatterReal = MoneyMaskedTextController(
-        decimalSeparator: ',', thousandSeparator: '.');
-    Rx<DateTime> dtPicked =
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)
-            .obs;
+    final _formatterReal = MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.');
+    Rx<DateTime> dtPicked = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).obs;
     RxBool pay = false.obs;
 
     Future<void> _selectDate() async {
@@ -55,8 +53,7 @@ class WidgetsPB {
           context: Get.context,
           initialDate: DateTime.now(),
           firstDate: DateTime(2017, 9, 7, 17, 30),
-          lastDate: DateTime(DateTime.now().year, DateTime.now().month,
-              DateTime.now().day + 7));
+          lastDate: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day + 7));
       if (picked != null && picked != dtPicked.value) dtPicked.value = picked;
     }
 
@@ -87,16 +84,11 @@ class WidgetsPB {
           padding: EdgeInsets.all(8.0),
           child: Column(
             children: [
-              InputPB.search(
-                  name, "Descrição", Icons.notes_rounded, c.suggestion),
+              InputPB.search(name, "Descrição", Icons.notes_rounded, c.suggestion),
               SizedBox(height: 5),
-              InputPB.numbers(
-                  _formatterReal, "Valor", Icons.attach_money_rounded, null),
+              InputPB.numbers(_formatterReal, "Valor", Icons.attach_money_rounded, null),
               SizedBox(height: 5),
-              InputPB.disable(
-                  null,
-                  DateFormat('dd/MM/yy').format(dtPicked.value),
-                  Icons.date_range_rounded, () {
+              InputPB.disable(null, DateFormat('dd/MM/yy').format(dtPicked.value), Icons.date_range_rounded, () {
                 _selectDate();
               }),
               CheckboxListTile(
@@ -125,12 +117,8 @@ class WidgetsPB {
   }
 
   Future createPurchase(String text) {
-    Rx<MoneyMaskedTextController> _formatterReal =
-        MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.')
-            .obs;
-    Rx<DateTime> dtPicked =
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)
-            .obs;
+    Rx<MoneyMaskedTextController> _formatterReal = MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.').obs;
+    Rx<DateTime> dtPicked = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).obs;
     final name = TextEditingController();
     final obs = TextEditingController();
     final parcelas = TextEditingController();
@@ -144,8 +132,7 @@ class WidgetsPB {
           context: Get.context,
           initialDate: DateTime.now(),
           firstDate: DateTime(2017, 9, 7, 17, 30),
-          lastDate: DateTime(DateTime.now().year, DateTime.now().month,
-              DateTime.now().day + 7));
+          lastDate: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day + 7));
       if (picked != null && picked != dtPicked.value) dtPicked.value = picked;
     }
 
@@ -174,21 +161,15 @@ class WidgetsPB {
           padding: EdgeInsets.all(8.0),
           child: Column(
             children: [
-              InputPB.search(
-                  name, "Descrição", Icons.notes_rounded, c.suggestion),
+              InputPB.search(name, "Descrição", Icons.notes_rounded, c.suggestion),
               SizedBox(height: 5),
-              InputPB.numbers(_formatterReal.value, "Valor",
-                  Icons.attach_money_rounded, null),
+              InputPB.numbers(_formatterReal.value, "Valor", Icons.attach_money_rounded, null),
               SizedBox(height: 5),
-              InputPB.disable(
-                  null,
-                  DateFormat('dd/MM/yy').format(dtPicked.value),
-                  Icons.date_range_rounded, () {
+              InputPB.disable(null, DateFormat('dd/MM/yy').format(dtPicked.value), Icons.date_range_rounded, () {
                 _selectDate();
               }),
               CheckboxListTile(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 title: Text(
                   "Despesa Paga",
                   style: TextPB.display5,
@@ -232,8 +213,7 @@ class WidgetsPB {
                   Flexible(
                     flex: 2,
                     child: CheckboxListTile(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       title: Text(
                         "Despesa parcelada",
                         style: TextPB.display5,
@@ -247,10 +227,7 @@ class WidgetsPB {
                   ),
                   Flexible(
                     flex: 1,
-                    child: parcelada.value == false
-                        ? SizedBox()
-                        : InputPB.numbers(parcelas, "Parcelas",
-                            Icons.format_list_numbered_rounded, null),
+                    child: parcelada.value == false ? SizedBox() : InputPB.numbers(parcelas, "Parcelas", Icons.format_list_numbered_rounded, null),
                   ),
                 ],
               ),
@@ -272,10 +249,7 @@ class WidgetsPB {
   Future editPurchase(PurchaseData pData) {
     final name = TextEditingController(text: pData.name);
     final obs = TextEditingController(text: pData.obs);
-    final _formatterReal = MoneyMaskedTextController(
-        decimalSeparator: ',',
-        thousandSeparator: '.',
-        initialValue: pData.amount.toDouble());
+    final _formatterReal = MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.', initialValue: pData.amount.toDouble());
     Rx<DateTime> dtPicked = pData.date.toDate().obs;
     RxBool pay = pData.pay.obs;
     RxString categorySelect = pData.category.obs;
@@ -285,8 +259,7 @@ class WidgetsPB {
           context: Get.context,
           initialDate: DateTime.now(),
           firstDate: DateTime(2017, 9, 7, 17, 30),
-          lastDate: DateTime(DateTime.now().year, DateTime.now().month,
-              DateTime.now().day + 7));
+          lastDate: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day + 7));
       if (picked != null && picked != dtPicked.value) dtPicked.value = picked;
     }
 
@@ -312,16 +285,11 @@ class WidgetsPB {
           padding: EdgeInsets.all(8.0),
           child: Column(
             children: [
-              InputPB.search(
-                  name, "Descrição", Icons.notes_rounded, c.suggestion),
+              InputPB.search(name, "Descrição", Icons.notes_rounded, c.suggestion),
               SizedBox(height: 5),
-              InputPB.numbers(
-                  _formatterReal, "Valor", Icons.attach_money_rounded, null),
+              InputPB.numbers(_formatterReal, "Valor", Icons.attach_money_rounded, null),
               SizedBox(height: 5),
-              InputPB.disable(
-                  null,
-                  DateFormat('dd/MM/yy').format(dtPicked.value),
-                  Icons.date_range_rounded, () {
+              InputPB.disable(null, DateFormat('dd/MM/yy').format(dtPicked.value), Icons.date_range_rounded, () {
                 _selectDate();
               }),
               CheckboxListTile(
@@ -350,8 +318,7 @@ class WidgetsPB {
                         isExpanded: true,
                         hint: Text(categorySelect.value),
                         items: c.category.map((value) {
-                          return DropdownMenuItem<String>(
-                              value: value['name'], child: Text(value['name']));
+                          return DropdownMenuItem<String>(value: value['name'], child: Text(value['name']));
                         }).toList(),
                         onChanged: (_) {
                           categorySelect.value = _;
@@ -424,6 +391,9 @@ class WidgetsPB {
       case "Saúde":
         return Colors.deepOrange;
         break;
+      case "Serviços Gerais":
+        return Colors.orange;
+        break;
       case "Trabalho":
         return Colors.blue;
         break;
@@ -434,6 +404,21 @@ class WidgetsPB {
         return Colors.lime;
         break;
       case "transference":
+        return Colors.green;
+        break;
+      case "Recebimento":
+        return Colors.green;
+        break;
+      case "Salários":
+        return Colors.green;
+        break;
+      case "Investimentos":
+        return Colors.green;
+        break;
+      case "Outros":
+        return Colors.green;
+        break;
+      case "Depósitos":
         return Colors.green;
         break;
 
@@ -448,9 +433,7 @@ class WidgetsPB {
 
     for (PurchaseData i in c.purchases) {
       c.maxChartVal.value = i.amount + c.maxChartVal.value;
-      if (i.date.toDate() == DateTime(value.year, value.month, value.day) &&
-          i.accountId == c.aBankFav.value.id &&
-          i.pay == true) {
+      if (i.date.toDate() == DateTime(value.year, value.month, value.day) && i.accountId == c.aBankFav.value.id && i.pay == true) {
         soma = soma + i.amount;
       }
     }

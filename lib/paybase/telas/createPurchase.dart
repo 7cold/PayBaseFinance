@@ -12,8 +12,9 @@ import 'package:intl/intl.dart';
 
 class CreatePurchasePB extends StatelessWidget {
   final String category;
+  final bool isReceiver;
 
-  CreatePurchasePB({this.category});
+  CreatePurchasePB({this.category, this.isReceiver});
 
   final Controller c = Get.put(Controller());
   final Rx<MoneyMaskedTextController> amount = MoneyMaskedTextController(decimalSeparator: ',', thousandSeparator: '.').obs;
@@ -69,258 +70,269 @@ class CreatePurchasePB extends StatelessWidget {
               body: SafeArea(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: CustomScrollView(slivers: [
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            InputPB.search(name, "Descrição", Icons.notes_rounded, c.suggestion),
-                            SizedBox(height: 5),
-                            InputPB.numbers(amount.value, "Valor", Icons.attach_money_rounded, (_) {
-                              amount.update((val) {});
-                              getValorParcela();
-                            }),
-                            SizedBox(height: 5),
-                            InputPB.disable(null, DateFormat('dd/MM/yy').format(dtPicked.value), Icons.date_range_rounded, () {
-                              _selectDate();
-                            }),
-                            CheckboxListTile(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              title: Text(
-                                "Despesa Paga",
-                                style: TextPB.display5,
-                              ),
-                              value: pay.value,
-                              onChanged: (newValue) {
-                                pay.value = newValue;
-                              },
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(top: 5, bottom: 5),
-                              child: Container(
-                                padding: EdgeInsets.only(right: 10, left: 10),
-                                width: Get.context.width,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[800],
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: DropdownButton(
-                                    underline: SizedBox(),
-                                    isExpanded: true,
-                                    hint: Text(categorySelect.value),
-                                    items: c.category.map((value) {
+                  child: ListView(
+                    physics: BouncingScrollPhysics(),
+                    children: [
+                      InputPB.search(name, "Descrição", Icons.notes_rounded, c.suggestion),
+                      SizedBox(height: 5),
+                      InputPB.numbers(amount.value, "", Icons.attach_money_rounded, (_) {
+                        amount.update((val) {});
+                        getValorParcela();
+                      }),
+                      SizedBox(height: 5),
+                      InputPB.disable(null, DateFormat('dd/MM/yy').format(dtPicked.value), Icons.date_range_rounded, () {
+                        _selectDate();
+                      }),
+                      CheckboxListTile(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        title: Text(
+                          isReceiver == true ? "Recebido" : "Despesa Paga",
+                          style: TextPB.display5,
+                        ),
+                        value: pay.value,
+                        onChanged: (newValue) {
+                          pay.value = newValue;
+                        },
+                        controlAffinity: ListTileControlAffinity.leading,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: 5, bottom: 5),
+                        child: Container(
+                          padding: EdgeInsets.only(right: 10, left: 10),
+                          width: Get.context.width,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: DropdownButton(
+                              underline: SizedBox(),
+                              isExpanded: true,
+                              hint: Text(categorySelect.value),
+                              items: isReceiver == true
+                                  ? c.receivement.map((value) {
+                                      return DropdownMenuItem<String>(
+                                          value: value['name'],
+                                          child: Text(
+                                            value['name'],
+                                          ));
+                                    }).toList()
+                                  : c.category.map((value) {
                                       return DropdownMenuItem<String>(
                                           value: value['name'],
                                           child: Text(
                                             value['name'],
                                           ));
                                     }).toList(),
-                                    onChanged: (_) {
-                                      categorySelect.value = _;
-                                    }),
-                              ),
-                            ),
-                            InputPB.field(obs, "Observação", Icons.emoji_objects_outlined),
-                            SizedBox(height: 5),
-                            Flex(
-                              direction: Axis.horizontal,
-                              children: [
-                                Flexible(
-                                  flex: 3,
-                                  child: CheckboxListTile(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    title: Text(
-                                      "Despesa parcelada",
-                                      style: TextPB.display5,
-                                    ),
-                                    value: parcelada.value,
-                                    onChanged: (newValue) {
-                                      parcelada.value = newValue;
-                                    },
-                                    controlAffinity: ListTileControlAffinity.leading,
-                                  ),
-                                ),
-                                Flexible(
-                                  flex: 2,
-                                  child: parcelada.value == false
-                                      ? SizedBox()
-                                      : Padding(
-                                          padding: const EdgeInsets.only(left: 8),
-                                          child: InputPB.numbers(parcelas, "Parcelas", Icons.format_list_numbered_rounded, (_) {
-                                            if (_ == null || _ == "") {
-                                              qtdParcelas.value = 1;
-                                            } else {
-                                              qtdParcelas.value = int.parse(_);
-                                            }
-                                          }),
-                                        ),
-                                ),
-                                Flexible(
-                                  flex: 2,
-                                  child: parcelada.value == false
-                                      ? SizedBox()
-                                      : Padding(
-                                          padding: EdgeInsets.only(top: 5, bottom: 5),
-                                          child: Container(
-                                            padding: EdgeInsets.only(right: 10, left: 10),
-                                            width: Get.context.width,
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[800],
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                            child: DropdownButton(
-                                                underline: SizedBox(),
-                                                isExpanded: true,
-                                                hint: Text(tipoParcela.value),
-                                                items: [
-                                                  DropdownMenuItem(value: "Dias", child: Text("Dias")),
-                                                  DropdownMenuItem(value: "Semanas", child: Text("Semanas")),
-                                                  DropdownMenuItem(value: "Meses", child: Text("Meses")),
-                                                ],
-                                                onChanged: (_) {
-                                                  tipoParcela.value = _;
-                                                }),
-                                          ),
-                                        ),
-                                ),
-                              ],
-                            ),
-                            parcelada.value == false
-                                ? SizedBox()
-                                : Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(left: 25, top: 8),
-                                      child: Text(
-                                        "Valor da parcela: R\$" + c.real.format(getValorParcela()),
-                                        style: TextPB.display5,
-                                      ),
-                                    ),
-                                  ),
-                            Padding(
-                              padding: EdgeInsets.only(top: 40),
-                              child: SizedBox(
-                                width: Get.width,
-                                child: ButtonsPB().button(
-                                    "Salvar",
-                                    parcelada.value == true && qtdParcelas.value == 1 || amount.value.numberValue == 0.00
-                                        ? null
-                                        : () {
-                                            if (parcelada.value == false) {
-                                              print("teste");
-                                              c.createPurchase({
-                                                "name": name.text == "" ? categorySelect.value : name.text,
-                                                "amount": getValorParcela() * -1,
-                                                "date": Timestamp.fromDate(dtPicked.value),
-                                                "pay": pay.value,
-                                                "accountId": c.aBankFav.value.id,
-                                                "account": c.aBankFav.value.name,
-                                                "category": categorySelect.value,
-                                                "obs": obs.text,
-                                                "file": "",
-                                                "tag": [],
-                                                "isParcela": 0,
-                                                "id": c.getRandomString(20),
-                                                "repeatId": []
-                                              }).whenComplete(() {
-                                                c.loading.value = false;
-                                                Get.back();
-                                              });
-                                            } else {
-                                              List repeatId = [];
-
-                                              for (var i = 0; i < qtdParcelas.value; i++) {
-                                                String id = c.getRandomString(20);
-                                                repeatId.add({
-                                                  "parcela": i + 1,
-                                                  "totalParcela": qtdParcelas.value,
-                                                  "repeatId": id,
-                                                });
-                                              }
-
-                                              for (var i = 0; i < qtdParcelas.value; i++) {
-                                                if (tipoParcela.value == "Dias") {
-                                                  c.loading.value = true;
-                                                  c.createPurchase({
-                                                    "name": name.text == "" ? categorySelect.value : name.text,
-                                                    "amount": getValorParcela() * -1,
-                                                    "date": Timestamp.fromDate(dtPicked.value.add(Duration(days: i))),
-                                                    "pay": i == 0 ? pay.value : false,
-                                                    "accountId": c.aBankFav.value.id,
-                                                    "account": c.aBankFav.value.name,
-                                                    "category": categorySelect.value,
-                                                    "obs": obs.text,
-                                                    "file": "",
-                                                    "tag": [],
-                                                    "id": repeatId[i]['repeatId'],
-                                                    "isParcela": repeatId[i]['parcela'],
-                                                    "repeatId": repeatId
-                                                  }).whenComplete(() {
-                                                    c.loading.value = false;
-                                                    Get.back();
-                                                  });
-                                                } else if (tipoParcela.value == "Semanas") {
-                                                  c.loading.value = true;
-                                                  c.createPurchase({
-                                                    "name": name.text == "" ? categorySelect.value : name.text,
-                                                    "amount": getValorParcela() * -1,
-                                                    "date": Timestamp.fromDate(
-                                                      dtPicked.value.add(
-                                                        Duration(days: 7 * i),
-                                                      ),
-                                                    ),
-                                                    "pay": i == 0 ? pay.value : false,
-                                                    "accountId": c.aBankFav.value.id,
-                                                    "account": c.aBankFav.value.name,
-                                                    "category": categorySelect.value,
-                                                    "obs": obs.text,
-                                                    "file": "",
-                                                    "tag": [],
-                                                    "id": repeatId[i]['repeatId'],
-                                                    "isParcela": repeatId[i]['parcela'],
-                                                    "repeatId": repeatId
-                                                  }).whenComplete(() {
-                                                    c.loading.value = false;
-                                                    Get.back();
-                                                  });
-                                                  print(
-                                                    dtPicked.value.add(Duration(days: 7 * i)),
-                                                  );
-                                                } else {
-                                                  c.loading.value = true;
-                                                  c.createPurchase({
-                                                    "name": name.text == "" ? categorySelect.value : name.text,
-                                                    "amount": getValorParcela() * -1,
-                                                    "date": Timestamp.fromDate(
-                                                        DateTime(dtPicked.value.year, dtPicked.value.month + i, dtPicked.value.day)),
-                                                    "pay": i == 0 ? pay.value : false,
-                                                    "accountId": c.aBankFav.value.id,
-                                                    "account": c.aBankFav.value.name,
-                                                    "category": categorySelect.value,
-                                                    "obs": obs.text,
-                                                    "file": "",
-                                                    "tag": [],
-                                                    "id": repeatId[i]['repeatId'],
-                                                    "isParcela": repeatId[i]['parcela'],
-                                                    "repeatId": repeatId
-                                                  }).whenComplete(() {
-                                                    c.loading.value = false;
-                                                    Get.back();
-                                                  });
-                                                }
-                                              }
-                                            }
-                                          }),
-                              ),
-                            ),
-                          ],
+                              onChanged: (_) {
+                                categorySelect.value = _;
+                              }),
                         ),
                       ),
-                    )
-                  ]),
+                      InputPB.field(obs, "Observação", Icons.emoji_objects_outlined),
+                      SizedBox(height: 5),
+                      CheckboxListTile(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        title: Text(
+                          isReceiver == true ? "Receita parcelada" : "Despesa parcelada",
+                          style: TextPB.display5,
+                        ),
+                        value: parcelada.value,
+                        onChanged: (newValue) {
+                          parcelada.value = newValue;
+                        },
+                        controlAffinity: ListTileControlAffinity.leading,
+                      ),
+                      parcelada.value == true
+                          ? Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: Color(corPri),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Flex(
+                                    direction: Axis.horizontal,
+                                    children: [
+                                      Flexible(
+                                        flex: 2,
+                                        child: parcelada.value == false
+                                            ? SizedBox()
+                                            : Padding(
+                                                padding: const EdgeInsets.only(right: 4),
+                                                child: InputPB.numbers(parcelas, "Parcelas", Icons.format_list_numbered_rounded, (_) {
+                                                  if (_ == null || _ == "") {
+                                                    qtdParcelas.value = 1;
+                                                  } else {
+                                                    qtdParcelas.value = int.parse(_);
+                                                  }
+                                                }),
+                                              ),
+                                      ),
+                                      Flexible(
+                                        flex: 3,
+                                        child: parcelada.value == false
+                                            ? SizedBox()
+                                            : Padding(
+                                                padding: EdgeInsets.only(
+                                                  top: 5,
+                                                  bottom: 5,
+                                                ),
+                                                child: Container(
+                                                  padding: EdgeInsets.only(right: 10, left: 10),
+                                                  width: Get.context.width,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey[800],
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                  child: DropdownButton(
+                                                      underline: SizedBox(),
+                                                      isExpanded: true,
+                                                      hint: Text(tipoParcela.value),
+                                                      items: [
+                                                        DropdownMenuItem(value: "Dias", child: Text("Dias")),
+                                                        DropdownMenuItem(value: "Semanas", child: Text("Semanas")),
+                                                        DropdownMenuItem(value: "Meses", child: Text("Meses")),
+                                                      ],
+                                                      onChanged: (_) {
+                                                        tipoParcela.value = _;
+                                                      }),
+                                                ),
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                  parcelada.value == false
+                                      ? SizedBox()
+                                      : Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            "Valor da parcela: R\$" + c.real.format(getValorParcela()),
+                                            style: TextPB.display5,
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            )
+                          : SizedBox(),
+                      Padding(
+                        padding: EdgeInsets.only(top: 40),
+                        child: SizedBox(
+                          width: Get.width,
+                          child: ButtonsPB().button(
+                              "Salvar",
+                              parcelada.value == true && qtdParcelas.value == 1 || amount.value.numberValue == 0.00
+                                  ? null
+                                  : () {
+                                      if (parcelada.value == false) {
+                                        c.createPurchase({
+                                          "name": name.text == "" ? categorySelect.value : name.text,
+                                          "amount": isReceiver == true ? getValorParcela() : getValorParcela() * -1,
+                                          "date": Timestamp.fromDate(dtPicked.value),
+                                          "pay": pay.value,
+                                          "accountId": c.aBankFav.value.id,
+                                          "account": c.aBankFav.value.name,
+                                          "category": categorySelect.value,
+                                          "obs": obs.text,
+                                          "file": "",
+                                          "tag": [],
+                                          "isParcela": 0,
+                                          "id": c.getRandomString(20),
+                                          "repeatId": []
+                                        }).whenComplete(() {
+                                          c.loading.value = false;
+                                          Get.back();
+                                        });
+                                      } else {
+                                        List repeatId = [];
+
+                                        for (var i = 0; i < qtdParcelas.value; i++) {
+                                          String id = c.getRandomString(20);
+                                          repeatId.add({
+                                            "parcela": i + 1,
+                                            "totalParcela": qtdParcelas.value,
+                                            "repeatId": id,
+                                          });
+                                        }
+
+                                        for (var i = 0; i < qtdParcelas.value; i++) {
+                                          if (tipoParcela.value == "Dias") {
+                                            c.loading.value = true;
+                                            c.createPurchase({
+                                              "name": name.text == "" ? categorySelect.value : name.text,
+                                              "amount": isReceiver == true ? getValorParcela() : getValorParcela() * -1,
+                                              "date": Timestamp.fromDate(dtPicked.value.add(Duration(days: i))),
+                                              "pay": i == 0 ? pay.value : false,
+                                              "accountId": c.aBankFav.value.id,
+                                              "account": c.aBankFav.value.name,
+                                              "category": categorySelect.value,
+                                              "obs": obs.text,
+                                              "file": "",
+                                              "tag": [],
+                                              "id": repeatId[i]['repeatId'],
+                                              "isParcela": repeatId[i]['parcela'],
+                                              "repeatId": repeatId
+                                            }).whenComplete(() {
+                                              c.loading.value = false;
+                                              Get.back();
+                                            });
+                                          } else if (tipoParcela.value == "Semanas") {
+                                            c.loading.value = true;
+                                            c.createPurchase({
+                                              "name": name.text == "" ? categorySelect.value : name.text,
+                                              "amount": isReceiver == true ? getValorParcela() : getValorParcela() * -1,
+                                              "date": Timestamp.fromDate(
+                                                dtPicked.value.add(
+                                                  Duration(days: 7 * i),
+                                                ),
+                                              ),
+                                              "pay": i == 0 ? pay.value : false,
+                                              "accountId": c.aBankFav.value.id,
+                                              "account": c.aBankFav.value.name,
+                                              "category": categorySelect.value,
+                                              "obs": obs.text,
+                                              "file": "",
+                                              "tag": [],
+                                              "id": repeatId[i]['repeatId'],
+                                              "isParcela": repeatId[i]['parcela'],
+                                              "repeatId": repeatId
+                                            }).whenComplete(() {
+                                              c.loading.value = false;
+                                              Get.back();
+                                            });
+                                            print(
+                                              dtPicked.value.add(Duration(days: 7 * i)),
+                                            );
+                                          } else {
+                                            c.loading.value = true;
+                                            c.createPurchase({
+                                              "name": name.text == "" ? categorySelect.value : name.text,
+                                              "amount": isReceiver == true ? getValorParcela() : getValorParcela() * -1,
+                                              "date": Timestamp.fromDate(DateTime(dtPicked.value.year, dtPicked.value.month + i, dtPicked.value.day)),
+                                              "pay": i == 0 ? pay.value : false,
+                                              "accountId": c.aBankFav.value.id,
+                                              "account": c.aBankFav.value.name,
+                                              "category": categorySelect.value,
+                                              "obs": obs.text,
+                                              "file": "",
+                                              "tag": [],
+                                              "id": repeatId[i]['repeatId'],
+                                              "isParcela": repeatId[i]['parcela'],
+                                              "repeatId": repeatId
+                                            }).whenComplete(() {
+                                              c.loading.value = false;
+                                              Get.back();
+                                            });
+                                          }
+                                        }
+                                      }
+                                    }),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

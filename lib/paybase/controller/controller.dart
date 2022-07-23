@@ -1,9 +1,9 @@
 import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:layouts/paybase/const/buttons.dart';
 import 'package:layouts/paybase/const/inputs.dart';
@@ -14,7 +14,6 @@ import 'package:layouts/paybase/telas/home/home.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:intl/intl.dart';
 import 'package:layouts/paybase/telas/login.dart';
-
 import '../const/widgets.dart';
 
 class Controller extends GetxController {
@@ -43,8 +42,14 @@ class Controller extends GetxController {
   RxBool loading = false.obs;
   RxBool therms = false.obs;
   RxDouble maxChartVal = 0.0.obs;
-  var _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  String _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
   Random _rnd = Random();
+  RxDouble vEntradas = 0.0.obs;
+  RxDouble vSaidas = 0.0.obs;
+  RxDouble vEntradasPrev = 0.0.obs;
+  RxDouble vSaidasPrev = 0.0.obs;
+  RxDouble vTotal = 0.0.obs;
+  RxDouble vTotalPrev = 0.0.obs;
 
   String createId() {
     return DateTime.now().year.toString() +
@@ -146,22 +151,18 @@ class Controller extends GetxController {
     loading.value = false;
   }
 
-  Future<dynamic> changePay(PurchaseData pData) async {
+  changePay(PurchaseData pData) {
     loading.value = true;
 
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(firebaseUser.value.uid)
-        .collection("purchases")
-        .doc(pData.id)
-        .update({"pay": !pData.pay});
+    FirebaseFirestore.instance.collection("users").doc(firebaseUser.value.uid).collection("purchases").doc(pData.id).update({"pay": !pData.pay});
 
     int index = purchases.indexOf(pData);
     purchases[index].pay = !pData.pay;
 
     purchases.refresh();
-
     getListChart();
+    cleanAmountAllTrans();
+
     loading.value = false;
   }
 
@@ -281,6 +282,8 @@ class Controller extends GetxController {
     purchases.sort((a, b) => b.date.compareTo(a.date));
 
     purchases.refresh();
+    vEntradas.value = 0.0;
+    vSaidas.value = 0.0;
 
     loading.value = false;
   }
@@ -372,6 +375,15 @@ class Controller extends GetxController {
     });
   }
 
+  cleanAmountAllTrans() {
+    vEntradas.value = 0.0;
+    vSaidas.value = 0.0;
+    vEntradasPrev.value = 0.0;
+    vSaidasPrev.value = 0.0;
+    vTotal.value = 0.0;
+    vTotalPrev.value = 0.0;
+  }
+
   RxBool verifLogado() {
     if (firebaseUser.value == null || userData['name'] == null) {
       return false.obs;
@@ -426,7 +438,7 @@ class Controller extends GetxController {
     },
     {
       "name": "Bares e Restaurantes",
-      "icon": Icons.liquor_outlined,
+      "icon": Icons.liquor_rounded,
       "color": Colors.purple,
     },
     {
@@ -436,7 +448,7 @@ class Controller extends GetxController {
     },
     {
       "name": "Compras",
-      "icon": Icons.shopping_bag_outlined,
+      "icon": Icons.shopping_bag_rounded,
       "color": Colors.indigo,
     },
     {
@@ -454,7 +466,11 @@ class Controller extends GetxController {
       "icon": Icons.school_rounded,
       "color": Colors.cyan,
     },
-    {"name": "Impostos e Taxas", "icon": Icons.fact_check, "color": Colors.teal},
+    {
+      "name": "Impostos e Taxas",
+      "icon": Icons.fact_check_rounded,
+      "color": Colors.teal,
+    },
     {
       "name": "Lazer e Hobbie",
       "icon": Icons.sports_handball_rounded,
@@ -467,7 +483,7 @@ class Controller extends GetxController {
     },
     {
       "name": "Outros",
-      "icon": Icons.format_list_bulleted_outlined,
+      "icon": Icons.format_list_bulleted_rounded,
       "color": Colors.grey,
     },
     {
@@ -475,7 +491,11 @@ class Controller extends GetxController {
       "icon": Icons.pets_rounded,
       "color": Colors.yellow,
     },
-    {"name": "Presentes e Doações", "icon": Icons.redeem_rounded, "color": Colors.amber},
+    {
+      "name": "Presentes e Doações",
+      "icon": Icons.redeem_rounded,
+      "color": Colors.amber,
+    },
     {
       "name": "Roupas",
       "icon": Icons.checkroom_rounded,
@@ -487,17 +507,53 @@ class Controller extends GetxController {
       "color": Colors.deepOrange,
     },
     {
+      "name": "Serviços Gerais",
+      "icon": Icons.engineering_rounded,
+      "color": Colors.orange,
+    },
+    {
       "name": "Trabalho",
       "icon": Icons.work_outline_rounded,
       "color": Colors.blue,
     },
-    {"name": "Transporte", "icon": Icons.directions_car_rounded, "color": Colors.lightBlue},
+    {
+      "name": "Transporte",
+      "icon": Icons.directions_car_rounded,
+      "color": Colors.lightBlue,
+    },
     {
       "name": "Viagem",
       "icon": Icons.airplanemode_active_rounded,
       "color": Colors.lime,
     }
   ].obs;
+
+  RxList<Map<dynamic, dynamic>> receivement = [
+    {
+      "name": "Salários",
+      "icon": Icons.monetization_on_outlined,
+      "color": Colors.green,
+    },
+    {
+      "name": "Investimentos",
+      "icon": Icons.bar_chart_rounded,
+      "color": Colors.green,
+    },
+    {
+      "name": "Depósitos",
+      "icon": Icons.money,
+      "color": Colors.green,
+    },
+    {
+      "name": "Outros",
+      "icon": Icons.pie_chart_outline_sharp,
+      "color": Colors.green,
+    },
+  ].obs;
+
+  RxBool isDark() {
+    return SchedulerBinding.instance.window.platformBrightness == Brightness.dark ? true.obs : false.obs;
+  }
 
   String getRandomString(int length) => String.fromCharCodes(Iterable.generate(length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 }

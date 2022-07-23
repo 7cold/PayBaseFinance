@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -68,41 +66,20 @@ class CardPB {
                                     ),
                                   ),
                                 ),
-                              ]
-                                  // : [
-                                  //     SizedBox(
-                                  //       height: 45,
-                                  //       width: Get.width / 1.8,
-                                  //       child: ButtonsPB().button("Sim", () {
-                                  //         c.deletePurchase(pData);
-                                  //         Get.back();
-                                  //       }),
-                                  //     ),
-                                  //     Center(
-                                  //       child: SizedBox(
-                                  //         height: 45,
-                                  //         width: Get.width / 1.8,
-                                  //         child: ButtonsPB().textButton(
-                                  //           "Cancelar",
-                                  //           () => Get.back(),
-                                  //         ),
-                                  //       ),
-                                  //     ),
-                                  //   ],
-                                  );
+                              ]);
                             },
-                            child: Text('🗑 Apagar')),
+                            child: Text('Apagar')),
                         CupertinoActionSheetAction(
                             onPressed: () {
                               WidgetsPB().editPurchase(pData);
                             },
-                            child: Text('🖊 Editar')),
+                            child: Text('Editar')),
                         CupertinoActionSheetAction(
-                          onPressed: () async {
-                            await c.changePay(pData);
+                          onPressed: () {
+                            c.changePay(pData);
                             Get.back();
                           },
-                          child: Text(pData.pay == true ? "⏱ Pendente" : "✅ Completo"),
+                          child: Text(pData.pay == true ? "Não Pago" : "Pago"),
                         ),
                       ],
                       cancelButton: CupertinoActionSheetAction(

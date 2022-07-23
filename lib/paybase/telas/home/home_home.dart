@@ -1,3 +1,4 @@
+import 'package:expandable/expandable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:layouts/paybase/const/text.dart';
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:layouts/paybase/const/widgets.dart';
 import 'package:layouts/paybase/controller/controller.dart';
 import 'package:layouts/paybase/telas/createPurchase.dart';
+import 'package:layouts/paybase/telas/historic_receive.dart';
 
 final Controller c = Get.put(Controller());
 
@@ -35,22 +37,80 @@ class HomeHome extends StatelessWidget {
                                 "Lista de Pagamentos",
                                 style: TextPB.display4,
                               ),
-                              Center(
-                                child: Container(
-                                  margin: EdgeInsets.only(top: 15, bottom: 20),
-                                  width: double.infinity,
-                                  child: Wrap(
-                                    alignment: WrapAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.center,
-                                    runAlignment: WrapAlignment.spaceEvenly,
-                                    children: c.category.map((value) {
-                                      return _icon(value['name'], value['icon'],
-                                          value['color']);
-                                    }).toList(),
+                              SizedBox(height: 16),
+                              ExpandablePanel(
+                                  theme: ExpandableThemeData(
+                                    alignment: Alignment.centerLeft,
+                                    iconColor: Colors.white,
+                                    inkWellBorderRadius: BorderRadius.circular(10),
                                   ),
-                                ),
-                              ),
+                                  header: SizedBox(
+                                    height: 60,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 10),
+                                      child: Center(
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            "Saídas",
+                                            style: TextPB.h4,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  collapsed: Center(
+                                    child: Container(
+                                      margin: EdgeInsets.only(top: 15, bottom: 20),
+                                      width: double.infinity,
+                                      child: Wrap(
+                                        alignment: WrapAlignment.spaceBetween,
+                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        runAlignment: WrapAlignment.spaceEvenly,
+                                        children: c.category.map((value) {
+                                          return _icon(value['name'], value['icon'], value['color'], false);
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ),
+                                  expanded: null),
+                              ExpandablePanel(
+                                  theme: ExpandableThemeData(
+                                    headerAlignment: ExpandablePanelHeaderAlignment.center,
+                                    iconColor: Colors.white,
+                                    inkWellBorderRadius: BorderRadius.circular(10),
+                                  ),
+                                  header: SizedBox(
+                                    height: 60,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(left: 10),
+                                      child: Center(
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            "Entradas",
+                                            style: TextPB.h4,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  collapsed: Center(
+                                    child: Container(
+                                      margin: EdgeInsets.only(top: 15, bottom: 20),
+                                      width: double.infinity,
+                                      child: Wrap(
+                                        alignment: WrapAlignment.spaceBetween,
+                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        runAlignment: WrapAlignment.spaceEvenly,
+                                        children: c.receivement.map((value) {
+                                          return _icon(value['name'], value['icon'], value['color'], true);
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ),
+                                  expanded: null),
+                              SizedBox(height: 16),
                               Text(
                                 "Promoção e Descontos",
                                 style: TextPB.display4,
@@ -62,15 +122,9 @@ class HomeHome extends StatelessWidget {
                           scrollDirection: Axis.horizontal,
                           child: Row(
                             children: [
-                              _cardPromo(
-                                  Colors.deepPurple.shade800,
-                                  "30%",
-                                  "Estacionamento",
-                                  "Consiga descontos exclusivos em seu estacionamento"),
-                              _cardPromo(Colors.green.shade600, "15%", "Cinema",
-                                  "Consiga descontos exclusivos em seu cinema"),
-                              _cardPromo(Colors.indigo.shade400, "50%", "Museu",
-                                  "Consiga descontos exclusivos em seu museu"),
+                              _cardPromo(Colors.deepPurple.shade800, "30%", "Estacionamento", "Consiga descontos exclusivos em seu estacionamento"),
+                              _cardPromo(Colors.green.shade600, "15%", "Cinema", "Consiga descontos exclusivos em seu cinema"),
+                              _cardPromo(Colors.indigo.shade400, "50%", "Museu", "Consiga descontos exclusivos em seu museu"),
                             ],
                           ),
                         ),
@@ -84,7 +138,7 @@ class HomeHome extends StatelessWidget {
   }
 }
 
-Widget _icon(String text, IconData icon, MaterialColor cor) {
+Widget _icon(String text, IconData icon, MaterialColor cor, bool receiver) {
   return Container(
     width: 90,
     height: 120,
@@ -102,8 +156,8 @@ Widget _icon(String text, IconData icon, MaterialColor cor) {
               onPressed: () {
                 Get.to(() => CreatePurchasePB(
                       category: text,
+                      isReceiver: receiver,
                     ));
-                // WidgetsPB().createPurchase(text);
               },
             ),
           ),
@@ -124,12 +178,14 @@ Widget _icon(String text, IconData icon, MaterialColor cor) {
   );
 }
 
-Widget _cardTotalHome() => Container(
+Widget _cardTotalHome() {
+  return Obx(
+    () => Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 20, top: 20),
       padding: EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Color(corPri),
+        color: c.isDark() == true.obs ? Color(corPri) : Color(corPri).withAlpha(150),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -138,108 +194,104 @@ Widget _cardTotalHome() => Container(
         children: [
           Text(
             "Saldo Disponível",
-            style: TextStyle(fontFamily: "lato"),
+            style: TextPB.display6,
           ),
           c.loading.value == false
-              ? RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'R\$',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontFamily: "lato",
-                            fontSize: 25),
-                      ),
-                      TextSpan(
-                          text: c.real.format(c.getTotalAmount()),
-                          style: TextStyle(fontFamily: "lato", fontSize: 26))
-                    ],
-                  ),
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'R\$',
+                      style: TextPB.display5,
+                    ),
+                    Text(
+                      c.real.format(c.getTotalAmount()),
+                      style: TextStyle(fontFamily: "lato", fontSize: 26, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 )
               : CupertinoActivityIndicator(),
           SizedBox(height: 12),
-          Wrap(
-              alignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text("R\$" + c.real.format(c.getAmountLastMonth()),
-                    style: TextStyle(
-                        fontFamily: "lato",
-                        color: Colors.deepPurple.shade800,
-                        fontSize: 18)),
-                SizedBox(
-                  width: 12,
+          Wrap(alignment: WrapAlignment.center, crossAxisAlignment: WrapCrossAlignment.center, children: [
+            Text("R\$" + c.real.format(c.getAmountLastMonth()),
+                style: TextStyle(fontFamily: "lato", color: Colors.deepPurple.shade800, fontSize: 18)),
+            SizedBox(
+              width: 12,
+            ),
+            Tooltip(
+              message: "Variação Mensal",
+              child: Chip(
+                padding: EdgeInsets.all(0),
+                label: Wrap(
+                  children: [
+                    c.variationLastMonth().isInfinite || c.variationLastMonth().isNaN
+                        ? Text("")
+                        : Text(c.variationLastMonth().toStringAsFixed(0).toString() + "%"),
+                    c.variationLastMonth().isNegative
+                        ? Icon(
+                            Icons.trending_down_rounded,
+                            size: 18,
+                          )
+                        : Icon(
+                            Icons.trending_up_rounded,
+                            size: 18,
+                          )
+                  ],
                 ),
-                Tooltip(
-                  message: "Variação Mensal",
-                  child: Chip(
-                    padding: EdgeInsets.all(0),
-                    label: Wrap(
-                      children: [
-                        c.variationLastMonth().isInfinite ||
-                                c.variationLastMonth().isNaN
-                            ? Text("")
-                            : Text(c
-                                    .variationLastMonth()
-                                    .toStringAsFixed(0)
-                                    .toString() +
-                                "%"),
-                        c.variationLastMonth().isNegative
-                            ? Icon(
-                                Icons.trending_down_rounded,
-                                size: 18,
-                              )
-                            : Icon(
-                                Icons.trending_up_rounded,
-                                size: 18,
-                              )
-                      ],
-                    ),
-                  ),
-                )
-              ]),
+              ),
+            )
+          ]),
           SizedBox(height: 12),
           Container(
+            height: 70,
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              alignment: WrapAlignment.spaceAround,
+            child: Flex(
+              direction: Axis.horizontal,
               children: [
                 _iconTotalHome("Transferir", Icons.attach_money_outlined, () {
-                  WidgetsPB().createTransference();
+                  Get.to(() => CreatePurchasePB(
+                        category: "Recebimento",
+                        isReceiver: true,
+                      ));
                 }),
-                _iconTotalHome("Arquivar", Icons.archive, () {}),
-                _iconTotalHome("Histórico", Icons.history, () {}),
+                _iconTotalHome("Histórico", Icons.history, () {
+                  Get.to(() => HistoricReceivePB());
+                }),
               ],
             ),
           )
         ],
       ),
-    );
+    ),
+  );
+}
 
-Widget _iconTotalHome(String label, IconData icon, Function func) => Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: func,
-        child: Container(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: Color(corPri),
-              ),
-              Text(
-                label,
-                style: TextStyle(color: Colors.grey.shade800),
-              )
-            ],
+Widget _iconTotalHome(String label, IconData icon, Function func) => Flexible(
+      flex: 1,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: func,
+          child: Container(
+            width: double.infinity,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: Color(corPri),
+                ),
+                Text(
+                  label,
+                  style: TextStyle(color: Colors.grey.shade800),
+                )
+              ],
+            ),
           ),
         ),
       ),
@@ -267,11 +319,9 @@ Widget _cardPromo(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("$desconto OFF",
-                    style: TextPB.h4.copyWith(color: Colors.white60)),
+                Text("$desconto OFF", style: TextPB.h4.copyWith(color: Colors.white60)),
                 Text(label, style: TextPB.h4.copyWith(color: Colors.white)),
-                Text(descricao,
-                    style: TextPB.display5.copyWith(color: Colors.white60)),
+                Text(descricao, style: TextPB.display5.copyWith(color: Colors.white60)),
               ],
             ),
           ),
@@ -280,10 +330,7 @@ Widget _cardPromo(
             top: 20,
             child: Container(
               decoration: BoxDecoration(
-                  color: Colors.greenAccent.shade700,
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(50),
-                      topLeft: Radius.circular(50))),
+                  color: Colors.greenAccent.shade700, borderRadius: BorderRadius.only(bottomLeft: Radius.circular(50), topLeft: Radius.circular(50))),
               height: 50,
               width: 110,
               child: Center(

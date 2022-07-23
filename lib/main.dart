@@ -2,8 +2,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:layouts/paybase/const/colors.dart';
 import 'package:layouts/paybase/const/themes.dart';
+import 'package:layouts/paybase/const/widgets.dart';
 import 'package:layouts/paybase/root.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -46,8 +49,16 @@ class _MyAppState extends State<MyApp> {
             supportedLocales: [const Locale('pt', 'BR')],
             debugShowCheckedModeBanner: false,
             scrollBehavior: MyCustomScrollBehavior(),
-            theme: ThemesPB.light,
-            darkTheme: ThemesPB.dark,
+            theme: ThemeData.light().copyWith(
+              textSelectionTheme: TextSelectionThemeData(selectionColor: Color(corPri).withAlpha(150), cursorColor: Color(corPri)),
+              backgroundColor: Colors.white,
+              checkboxTheme: CheckboxThemeData(fillColor: MaterialStateProperty.all(Color(corPri))),
+            ),
+            darkTheme: ThemeData.dark().copyWith(
+              textSelectionTheme: TextSelectionThemeData(selectionColor: Color(corPri).withAlpha(150), cursorColor: Color(corPri)),
+              backgroundColor: Color(corBackDark),
+              checkboxTheme: CheckboxThemeData(fillColor: MaterialStateProperty.all(Color(corPri))),
+            ),
             home: Root(),
           );
         }
